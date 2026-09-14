@@ -1,0 +1,1105 @@
+# BUILD A COMPLETE GOOGLE DRIVE BATCH PHOTO WATERMARKING SYSTEM
+
+## 1. PROJECT OBJECTIVE
+
+Build a production-ready web application that allows a church media team to batch-process photographs stored inside a Google Drive folder.
+
+The user should only need to:
+
+1. Open the application.
+2. Connect/sign in to Google Drive.
+3. Paste the Google Drive folder link containing the original photographs.
+4. Select/confirm the church logo.
+5. Click **"Process Photos."**
+6. The system automatically retrieves every supported photograph from that folder.
+7. Applies the church logo as a watermark/trademark at the **bottom center** of every photograph.
+8. Preserves the original photograph's orientation and dimensions.
+9. Preserves image quality as much as technically possible.
+10. Creates a new folder in Google Drive for the processed images.
+11. Uploads all processed photographs into that new folder.
+12. Gives the user a direct link to the newly created Google Drive folder.
+
+The system must be designed for real-world use by a church media team, meaning the interface must be extremely simple and reliable.
+
+The user should NOT need to understand programming, image processing, file formats, APIs, command lines, or technical settings.
+
+---
+
+# 2. CORE WORKFLOW
+
+The complete workflow should be:
+
+Google Drive
+↓
+User pastes source folder link
+↓
+Application validates folder
+↓
+Application lists supported photographs
+↓
+Application downloads/processes photographs
+↓
+Automatically determines each photograph's dimensions/orientation
+↓
+Applies church logo
+↓
+Preserves original dimensions
+↓
+Exports processed image
+↓
+Creates a new Google Drive folder
+↓
+Uploads processed photographs
+↓
+Shows processing summary
+↓
+Provides Google Drive link to processed folder
+
+---
+
+# 3. GOOGLE DRIVE INTEGRATION
+
+Use the official Google Drive API and OAuth authentication.
+
+Do NOT ask the user to provide their Google password, Google access token, API key, or credentials manually.
+
+The application should use Google's official OAuth flow.
+
+Required capabilities:
+
+* Sign in with Google.
+* Request only the Google Drive permissions genuinely required.
+* Read files from the selected source folder.
+* Download photographs from that folder.
+* Create a new folder in Google Drive.
+* Upload processed photographs into that folder.
+* Return a clickable link to the created folder.
+
+The application must never delete or modify the original photographs.
+
+The original folder and its contents must remain completely untouched.
+
+---
+
+# 4. GOOGLE DRIVE FOLDER INPUT
+
+The main interface should have a prominent field:
+
+"Paste Google Drive Folder Link"
+
+Example:
+
+https://drive.google.com/drive/folders/XXXXXXXX
+
+After the user pastes the link:
+
+* Extract the folder ID.
+* Validate that the folder exists.
+* Confirm that the authenticated Google account has access.
+* Display the folder name.
+* Display the number of supported photographs found.
+
+Example:
+
+SOURCE FOLDER
+
+Sunday Service — 13 September 2026
+
+42 photos found
+
+[ Process Photos ]
+
+Do not require the user to manually select every photograph.
+
+Process all supported photographs in the folder automatically.
+
+---
+
+# 5. SUPPORTED FILE TYPES
+
+Initially support:
+
+* JPG
+* JPEG
+* PNG
+* WEBP
+* HEIC/HEIF if technically practical
+
+The system should distinguish photographs from unrelated files.
+
+Ignore:
+
+* PDFs
+* Documents
+* Videos
+* Google Docs
+* Google Sheets
+* Google Slides
+* Other unsupported files
+
+Show the user how many files were ignored.
+
+Example:
+
+42 photos found
+3 unsupported files ignored
+
+---
+
+# 6. SUBFOLDERS
+
+Design the system so it can intelligently handle subfolders.
+
+Default behavior:
+
+Process photographs directly inside the selected Google Drive folder.
+
+Provide an optional setting:
+
+[ ] Include photos inside subfolders
+
+If enabled, recursively scan subfolders.
+
+Preserve useful filename information and avoid accidental filename collisions.
+
+---
+
+# 7. CHURCH LOGO / WATERMARK
+
+The church logo is the watermark.
+
+The logo must support transparency.
+
+Preferred format:
+
+PNG with transparent background.
+
+The application should have a permanent logo configuration.
+
+The administrator should be able to upload/change the church logo from the application's settings.
+
+Do NOT flatten the logo onto a white background.
+
+Transparency must be preserved.
+
+The watermark should be positioned:
+
+HORIZONTALLY:
+Exactly centered.
+
+VERTICALLY:
+Near the bottom of the photograph with a consistent proportional margin.
+
+Do NOT place it directly against the edge.
+
+Use a proportional margin so the appearance remains consistent across different image resolutions.
+
+For example, conceptually:
+
+bottom margin ≈ 2–4% of image height
+
+The exact value should be configurable.
+
+---
+
+# 8. LOGO SIZE
+
+Do NOT use one fixed pixel size for every photograph.
+
+The logo should scale relative to the photograph.
+
+For example, calculate its width as a percentage of the image width.
+
+The administrator should be able to configure:
+
+* Logo width percentage
+* Bottom margin percentage
+* Logo opacity
+* Optional horizontal offset
+* Optional vertical offset
+
+However, create sensible defaults so normal users never need to change these settings.
+
+Example default:
+
+Logo width: approximately 12% of image width
+Bottom margin: approximately 3% of image height
+Opacity: 100%
+
+Use a maximum and minimum logo size so extremely small or extremely large photographs do not produce ridiculous results.
+
+---
+
+# 9. ORIENTATION HANDLING
+
+This is extremely important.
+
+The application must NOT rotate every image into one standard orientation.
+
+Each photograph must retain the orientation in which it was taken.
+
+Examples:
+
+Landscape:
+
+6000 × 4000
+
+remains:
+
+6000 × 4000
+
+Portrait:
+
+4000 × 6000
+
+remains:
+
+4000 × 6000
+
+Square:
+
+4000 × 4000
+
+remains:
+
+4000 × 4000
+
+The watermark must automatically be centered relative to the final visible photograph.
+
+---
+
+# 10. EXIF ORIENTATION
+
+Many cameras and phones store orientation information inside EXIF metadata rather than physically rotating the pixels.
+
+The application must correctly interpret EXIF orientation.
+
+Before compositing the watermark:
+
+1. Read EXIF orientation.
+2. Normalize orientation correctly.
+3. Apply the watermark based on the actual visible orientation.
+4. Ensure the final exported photograph displays correctly.
+
+Do not produce sideways or upside-down photographs.
+
+Test all standard EXIF orientation cases.
+
+---
+
+# 11. IMAGE QUALITY
+
+Image quality is a major requirement.
+
+The system must NOT unnecessarily resize photographs.
+
+If the original photograph is:
+
+6000 × 4000
+
+the output should remain:
+
+6000 × 4000
+
+unless there is a technical limitation that makes this impossible.
+
+Do not resize images merely to make processing easier.
+
+Do not create thumbnails as the final output.
+
+Do not downscale photographs.
+
+Avoid unnecessary compression.
+
+For JPEG:
+
+* Use high-quality JPEG encoding.
+* Make quality configurable.
+* Default to a very high quality setting such as 95 or an equivalent visually loss-minimizing setting.
+* Preserve chroma quality where supported.
+
+For PNG:
+
+* Preserve PNG quality/losslessness.
+
+For WEBP:
+
+* Preserve dimensions and use high-quality encoding.
+
+For HEIC:
+
+* Preserve dimensions where possible.
+* Convert only when necessary.
+* If conversion is necessary, clearly document the behavior.
+
+The system should prioritize:
+
+1. Original dimensions
+2. Visual quality
+3. Correct color
+4. Correct orientation
+5. Reasonable file size
+
+---
+
+# 12. COLOR MANAGEMENT
+
+Do not accidentally destroy photograph colors.
+
+Handle embedded ICC color profiles where possible.
+
+Avoid converting photographs into an unnecessarily different color space.
+
+The final photograph should visually resemble the original photograph as closely as possible except for the added church logo.
+
+Do not apply:
+
+* Filters
+* Sharpening
+* Contrast changes
+* Saturation changes
+* AI enhancement
+* Noise reduction
+* Automatic color grading
+
+The system is ONLY a watermarking tool.
+
+---
+
+# 13. METADATA
+
+Preserve useful image metadata where technically possible.
+
+Do not unnecessarily strip:
+
+* Camera metadata
+* Date/time
+* GPS metadata
+* Copyright information
+* Other useful EXIF information
+
+However, design the application so metadata handling can later be configured by an administrator.
+
+Do not modify metadata unnecessarily.
+
+---
+
+# 14. OUTPUT GOOGLE DRIVE FOLDER
+
+After processing begins, create a new folder inside the ORIGINAL Google Drive folder.
+
+Default naming:
+
+Original Folder Name + " — Watermarked"
+
+Example:
+
+Original:
+
+Sunday Service — 13 September 2026
+
+Created:
+
+Sunday Service — 13 September 2026 — Watermarked
+
+Never put processed images into the original folder unless explicitly configured.
+
+Never overwrite the originals.
+
+---
+
+# 15. DUPLICATE PROTECTION
+
+The application must protect against accidentally creating duplicate processing jobs.
+
+If the user processes the same folder twice, intelligently detect whether a corresponding output folder already exists.
+
+Give the user choices such as:
+
+* Create a new output folder
+* Replace/reprocess existing output
+* Cancel
+
+Default should be:
+
+Create a new output folder.
+
+Never silently overwrite an existing processed collection.
+
+---
+
+# 16. FILE NAMING
+
+Keep the original filename whenever possible.
+
+Example:
+
+IMG_0012.jpg
+
+should remain:
+
+IMG_0012.jpg
+
+Do NOT rename files unnecessarily.
+
+If a filename collision occurs, handle it safely.
+
+Do not create ugly names like:
+
+IMG_0012_final_final_2.jpg
+
+unless necessary.
+
+---
+
+# 17. USER INTERFACE
+
+The interface should be extremely simple and professional.
+
+Main screen:
+
+---
+
+CHURCH PHOTO WATERMARKER
+
+Google Drive folder
+
+[ Paste folder link ]
+
+[ Validate Folder ]
+
+---
+
+Folder:
+Sunday Service — 13 September 2026
+
+42 photographs found
+
+[ Process Photos ]
+
+---
+
+During processing show:
+
+Processing photographs...
+
+17 / 42
+
+[████████████░░░░░░░░]
+
+Current:
+IMG_0017.jpg
+
+Processed:
+17
+
+Remaining:
+25
+
+Do not freeze the interface.
+
+The user must be able to see progress.
+
+---
+
+# 18. COMPLETION SCREEN
+
+After successful processing:
+
+PROCESSING COMPLETE ✓
+
+42 photographs processed successfully.
+
+0 failed.
+
+3 unsupported files ignored.
+
+Output folder:
+
+Sunday Service — 13 September 2026 — Watermarked
+
+[ Open Google Drive Folder ]
+
+Also provide:
+
+[ Process Another Folder ]
+
+---
+
+# 19. ERROR HANDLING
+
+The application must handle failures gracefully.
+
+Possible failures:
+
+* Invalid Google Drive URL
+* Folder does not exist
+* User does not have access
+* Google authentication expired
+* Photograph cannot be downloaded
+* Corrupt photograph
+* Unsupported image format
+* Logo missing
+* Logo file corrupt
+* Processing failure
+* Upload failure
+* Network interruption
+* Google API rate limits
+* Duplicate filename
+* Insufficient permissions
+* Extremely large photograph
+
+Do not crash the entire batch because one photograph fails.
+
+Example:
+
+42 total
+40 successful
+2 failed
+
+The application should continue processing the remaining images.
+
+At the end show a downloadable/loggable error report containing:
+
+Filename
+Problem
+Suggested action
+
+---
+
+# 20. RETRY SYSTEM
+
+If an upload or processing operation fails because of a temporary network/API issue:
+
+Automatically retry intelligently.
+
+Use exponential backoff.
+
+Do not endlessly retry.
+
+For example:
+
+Attempt 1
+Attempt 2
+Attempt 3
+
+After the maximum attempts, mark that photograph as failed and continue.
+
+The user should be able to retry failed photographs afterward.
+
+---
+
+# 21. LARGE BATCHES
+
+Design the system for real media-team workloads.
+
+It should be capable of handling:
+
+10 photos
+50 photos
+100 photos
+500 photos
+1000+ photos
+
+Do not load every original photograph into browser memory simultaneously.
+
+Use streaming/chunked processing or server-side processing where appropriate.
+
+Process photographs efficiently while preventing memory exhaustion.
+
+---
+
+# 22. SECURITY
+
+Security is extremely important.
+
+Use proper OAuth authentication.
+
+Never store Google passwords.
+
+Never expose Google access tokens in frontend code.
+
+Never place credentials in GitHub.
+
+Use environment variables for secrets.
+
+Validate Google Drive folder IDs.
+
+Validate uploaded logo files.
+
+Validate file types rather than trusting filenames alone.
+
+Prevent path traversal.
+
+Prevent arbitrary file access.
+
+Limit processing resources appropriately.
+
+---
+
+# 23. PRIVACY
+
+Photographs belong to the church/media team.
+
+Do not send photographs to unnecessary third-party AI services.
+
+This is NOT an AI image-generation system.
+
+The application should process the photographs using deterministic image-processing software.
+
+If server-side processing is used:
+
+* Clearly separate temporary files from permanent storage.
+* Delete temporary downloaded photographs after successful upload.
+* Do not retain user photographs unnecessarily.
+* Do not create hidden copies.
+
+Ideally, photographs should exist temporarily only for the duration of processing.
+
+---
+
+# 24. ARCHITECTURE
+
+Choose a reliable architecture.
+
+Recommended conceptual architecture:
+
+FRONTEND
+↓
+Authentication
+↓
+Backend
+↓
+Google Drive API
+↓
+Image Processing Engine
+↓
+Google Drive API
+↓
+Output Folder
+
+Do NOT perform huge image-processing workloads entirely inside the browser if that risks crashing the user's device.
+
+The system should be designed to work reliably even when the media team has an average/low-powered computer.
+
+---
+
+# 25. IMAGE PROCESSING ENGINE
+
+Use a mature, reliable image-processing library rather than manually manipulating raw pixels.
+
+The engine must support:
+
+* JPEG
+* PNG
+* WebP
+* HEIC where available
+* EXIF orientation
+* Alpha compositing
+* High-resolution images
+* High-quality JPEG encoding
+* Metadata preservation where possible
+
+Choose the best appropriate technology for the selected application stack.
+
+Before implementing, evaluate available libraries and select the one that provides the best combination of:
+
+* Quality
+* Performance
+* Reliability
+* Format support
+* EXIF support
+* Metadata handling
+
+Document the decision in the project.
+
+---
+
+# 26. WATERMARK COMPOSITING
+
+The watermark algorithm should conceptually be:
+
+1. Load photograph.
+2. Read metadata.
+3. Correct orientation.
+4. Determine final image width and height.
+5. Determine logo dimensions proportionally.
+6. Resize logo using high-quality interpolation.
+7. Calculate horizontal center.
+8. Calculate bottom margin.
+9. Composite transparent logo onto photograph.
+10. Export using appropriate format/quality.
+11. Preserve dimensions.
+12. Preserve metadata where supported.
+13. Verify output.
+14. Upload to Google Drive.
+
+The final logo must never extend outside the image.
+
+---
+
+# 27. OUTPUT VALIDATION
+
+After creating each processed image, verify:
+
+* File exists.
+* File is readable.
+* Width matches original.
+* Height matches original.
+* Orientation is correct.
+* Logo is present.
+* Output file is not corrupted.
+* File size is reasonable.
+* Correct file extension is used.
+
+If validation fails, mark the photograph as failed rather than uploading a broken file.
+
+---
+
+# 28. ADMIN SETTINGS
+
+Create a protected settings area.
+
+Settings should include:
+
+### Logo
+
+* Upload logo
+* Replace logo
+* Preview logo
+
+### Watermark
+
+* Logo width %
+* Bottom margin %
+* Opacity
+* Horizontal position
+* Vertical position
+
+### Output
+
+* Output folder naming format
+* JPEG quality
+* Metadata behavior
+* Include subfolders
+
+### Processing
+
+* Maximum concurrent processing jobs
+* Retry count
+
+The normal media-team user should not need to enter these settings every time.
+
+---
+
+# 29. PREVIEW FUNCTION
+
+Before processing an entire folder, allow the user to preview how the watermark will look.
+
+The system can take one representative photograph and show:
+
+ORIGINAL
+
+vs.
+
+WATERMARKED
+
+This allows the media team to confirm the logo placement before processing hundreds of photographs.
+
+The preview must not permanently modify the original.
+
+---
+
+# 30. IMPORTANT DESIGN PRINCIPLE
+
+This should NOT look like an AI-generated application.
+
+Avoid unnecessary:
+
+* AI gradients
+* Excessive glowing effects
+* Futuristic graphics
+* Chatbot interfaces
+* Overcomplicated dashboards
+* Fake AI terminology
+
+This is a practical professional media tool.
+
+The design should feel like software used by a professional photography/media organization.
+
+Clean.
+Simple.
+Fast.
+Reliable.
+
+---
+
+# 31. LOGGING
+
+Maintain useful processing logs.
+
+For every job record:
+
+* Date/time
+* Source folder
+* Number of photographs
+* Successful
+* Failed
+* Ignored
+* Output folder
+* Processing duration
+
+Do not log sensitive photograph contents.
+
+---
+
+# 32. JOB HISTORY
+
+Provide a simple history page.
+
+Example:
+
+PROCESSING HISTORY
+
+13 September 2026
+Sunday Service
+42 photos
+42 successful
+[Open Output Folder]
+
+6 September 2026
+Sunday Service
+58 photos
+57 successful
+1 failed
+[Open Output Folder]
+[View Errors]
+
+This allows the media team to easily find previous batches.
+
+---
+
+# 33. GOOGLE DRIVE OUTPUT LINK
+
+When processing is finished, prominently display:
+
+"Your watermarked photographs are ready."
+
+Then:
+
+[ OPEN WATERMARKED PHOTOS IN GOOGLE DRIVE ]
+
+This should open the actual Google Drive folder.
+
+---
+
+# 34. DO NOT CHANGE ORIGINALS
+
+This requirement is NON-NEGOTIABLE.
+
+Never:
+
+* Rename originals
+* Move originals
+* Delete originals
+* Replace originals
+* Compress originals
+* Modify originals
+* Add the watermark directly to originals
+
+Always create separate processed copies.
+
+---
+
+# 35. TESTING
+
+Do not consider the project finished after the application launches.
+
+Create automated tests for:
+
+* Landscape photographs
+* Portrait photographs
+* Square photographs
+* EXIF orientation
+* Transparent PNG logos
+* Different resolutions
+* Very large photographs
+* Small photographs
+* JPEG
+* PNG
+* WebP
+* HEIC if supported
+* Missing logo
+* Invalid Drive URL
+* Empty folder
+* Folder with unsupported files
+* Google authentication failure
+* Network interruption
+* Upload failure
+* Duplicate processing
+* Filename collisions
+
+Perform visual validation on generated outputs.
+
+---
+
+# 36. QUALITY ASSURANCE
+
+Before declaring the project complete, perform a full end-to-end test:
+
+1. Authenticate with Google.
+2. Paste a real Google Drive folder link.
+3. Discover photographs.
+4. Display the correct number.
+5. Process photographs.
+6. Correctly handle landscape images.
+7. Correctly handle portrait images.
+8. Correctly handle EXIF orientation.
+9. Apply the logo at bottom-center.
+10. Verify dimensions.
+11. Verify image quality.
+12. Create the output folder.
+13. Upload all successful files.
+14. Confirm files exist in Google Drive.
+15. Confirm originals are untouched.
+16. Display the final Google Drive link.
+
+Do not simply report that tests passed because the code ran.
+
+Actually inspect representative output images.
+
+---
+
+# 37. PROJECT STRUCTURE
+
+Create a clean maintainable project.
+
+Separate:
+
+* Frontend
+* Backend
+* Google Drive integration
+* Authentication
+* Image processing
+* Watermark configuration
+* Job management
+* Logging
+* Error handling
+* Tests
+
+Do not put the entire application inside one enormous source file.
+
+Use clear names and comments where necessary.
+
+---
+
+# 38. DOCUMENTATION
+
+Create a README explaining:
+
+* What the system does
+* How to install it
+* How to configure Google OAuth
+* How to configure the church logo
+* How to run locally
+* How to deploy it
+* Required environment variables
+* Google Drive permissions
+* Supported file formats
+* Known limitations
+* How image quality is preserved
+* How to troubleshoot common errors
+
+Also create a simple USER_GUIDE explaining how a church media team member uses it.
+
+The user guide should assume the person has no technical knowledge.
+
+---
+
+# 39. IMPORTANT DEVELOPMENT BEHAVIOR
+
+You are acting as a senior full-stack engineer.
+
+Do not blindly start coding.
+
+First:
+
+1. Inspect the existing project.
+2. Determine the current stack.
+3. Determine what is already implemented.
+4. Identify dependencies.
+5. Plan the architecture.
+6. Identify potential Google API limitations.
+7. Identify image-processing limitations.
+8. Then implement.
+
+Before changing existing code, understand it.
+
+Do not destroy existing functionality.
+
+If the repository is empty, establish a clean production-ready architecture.
+
+---
+
+# 40. SELF-CHECKING REQUIREMENT
+
+After each major implementation stage:
+
+* Run the application.
+* Run relevant tests.
+* Inspect errors.
+* Fix errors.
+* Re-run tests.
+* Verify the actual behavior.
+
+Do not assume something works because the code looks correct.
+
+When an error occurs, diagnose the root cause instead of hiding the error.
+
+---
+
+# 41. FINAL DELIVERABLE
+
+The finished system should allow a non-technical church media team member to perform this entire operation:
+
+Google Drive folder link
+
+↓
+
+CLICK PROCESS
+
+↓
+
+All photographs automatically collected
+
+↓
+
+Church logo automatically placed at bottom-center
+
+↓
+
+Original dimensions preserved
+
+↓
+
+Original quality preserved as far as technically possible
+
+↓
+
+Original photographs untouched
+
+↓
+
+New Google Drive folder automatically created
+
+↓
+
+Processed photographs uploaded
+
+↓
+
+User receives the Google Drive output link
+
+The final product should feel like a simple professional tool rather than a developer utility.
+
+Build the complete system, test it thoroughly, document it, and only then consider the implementation complete.
