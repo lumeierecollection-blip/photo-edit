@@ -28,6 +28,15 @@ app.use('/auth', require('./routes/auth'));
 app.use('/api/drive', require('./routes/drive'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/history', require('./routes/history'));
+app.use('/api/video', require('./routes/video'));
+const newsRoutes = require('./routes/news');
+app.use('/api/news', newsRoutes);
+app.use('/news-media', newsRoutes.mediaRouter);
+
+const videoJobs = require('./services/videoJobService');
+videoJobs.sweepStaleTempFiles();
+videoJobs.installShutdownHandlers();
+require('./services/newsProjectService').markInterruptedJobs();
 
 // Fallback to index.html for SPA routing
 app.get(/.*/, (req, res) => {
@@ -35,7 +44,16 @@ app.get(/.*/, (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Church Photo Watermarker running on http://localhost:${PORT}`);
+  console.log(`Church Media Tools running on http://localhost:${PORT}`);
+
+  // Surface missing Google credentials at startup rather than at the moment a
+  // user clicks "Sign in with Google" and lands on a Google error page.
+  const oauthConfig = require('./services/driveService').getOAuthConfigStatus();
+  if (!oauthConfig.configured) {
+    console.warn(`\n  WARNING: Google sign-in is not configured. Missing: ${oauthConfig.missing.join(', ')}`);
+    console.warn(`  Create a .env file in ${process.cwd()} (copy .env.example, or copy .env from your other computer),`);
+    console.warn('  then restart. Google Drive features stay unavailable until then.\n');
+  }
 });
 
 module.exports = app;

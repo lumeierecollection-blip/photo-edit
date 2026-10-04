@@ -3,3 +3,5 @@ node_modules/
 keys.txt
 uploads/
 *.log
+
+.claude/settings.local.json

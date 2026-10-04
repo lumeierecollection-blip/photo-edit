@@ -2,19 +2,14 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
-const { validateFolder, listPhotosInFolder, downloadFile, createOutputFolder, uploadFile } = require('../services/driveService');
+const { validateFolder, listPhotosInFolder, downloadFile, downloadFileToDisk, createOutputFolder, uploadFile, listFolderChildren } = require('../services/driveService');
 const { applyWatermark, generatePreview } = require('../services/imageService');
+const { isRawFileName } = require('../services/rawPreview');
 const { getSettings } = require('../config');
 const { addJobRecord } = require('../services/jobService');
 const { createJob, getJob, updateJob, completeJob, failJob } = require('../services/progressStore');
+const requireAuth = require('../middleware/requireAuth');
 
-// Middleware to check authentication
-function requireAuth(req, res, next) {
-  if (!req.session || !req.session.tokens) {
-    return res.status(401).json({ error: 'Not authenticated with Google Drive.' });
-  }
-  next();
-}
 
 router.post('/validate', requireAuth, async (req, res) => {
   try {
@@ -107,6 +102,9 @@ router.post('/process', requireAuth, async (req, res) => {
   // Hand back a job id immediately so the client can poll for live progress
   // instead of blocking on the whole batch inside a single request.
   const jobId = createJob(photos.length);
+  updateJob(jobId, { paused: false, cancelled: false, pausedAt: null, pausedMs: 0 });
+  const control = { controller: new AbortController(), resume: null };
+  controls.set(jobId, control);
   res.json({ success: true, jobId, totalPhotos: photos.length });
 
   (async () => {
@@ -116,34 +114,70 @@ router.post('/process', requireAuth, async (req, res) => {
 
       let successful = 0;
       let failed = 0;
+      let skipped = 0;
       const errors = [];
 
-      for (let i = 0; i < photos.length; i++) {
-        const photo = photos[i];
-        updateJob(jobId, { currentFile: photo.name });
-        const localInput = path.join(tempDir, `in_${Date.now()}_${photo.name}`);
-        const localOutput = path.join(tempDir, `out_${Date.now()}_${photo.name}`);
-
+      // Running a folder again (e.g. to retry failed photos) must not upload
+      // the photos that already worked a second time.
+      let alreadyDone = new Set();
+      if (outputFolder.exists) {
         try {
-          await downloadFile(tokens, photo.id, localInput);
-          await applyWatermark(localInput, localOutput, settings);
-          await uploadFile(tokens, outputFolder.folderId, localOutput, photo.name);
-
-          successful++;
+          alreadyDone = new Set((await listFolderChildren(tokens, outputFolder.folderId, '', 'id, name')).map(f => f.name));
         } catch (err) {
-          failed++;
-          errors.push({
-            filename: photo.name,
-            problem: err.message,
-            suggestedAction: 'Check file format or network connection and retry.'
-          });
-        } finally {
-          if (fs.existsSync(localInput)) fs.unlink(localInput, () => {});
-          if (fs.existsSync(localOutput)) fs.unlink(localOutput, () => {});
-          updateJob(jobId, { processed: i + 1, successful, failed });
+          console.error('Could not list the existing output folder:', err.message);
         }
       }
 
+      for (let i = 0; i < photos.length; i++) {
+        await waitWhilePaused(jobId);
+        if (getJob(jobId).cancelled) break;
+        // A pause pressed between photos aborted nothing; start clean.
+        if (control.controller.signal.aborted) control.controller = new AbortController();
+
+        const photo = photos[i];
+        updateJob(jobId, { currentFile: photo.name });
+        // Camera RAW files (.CR2 etc.) come out as JPEGs: IMG_8464.CR2 → IMG_8464.jpg
+        const outputName = isRawFileName(photo.name) ? photo.name.replace(/\.[^.]+$/, '.jpg') : photo.name;
+        if (alreadyDone.has(outputName)) {
+          skipped++;
+          updateJob(jobId, { processed: i + 1, successful, failed, skipped });
+          continue;
+        }
+        const localInput = path.join(tempDir, `in_${Date.now()}_${photo.name}`);
+        const localOutput = path.join(tempDir, `out_${Date.now()}_${outputName}`);
+        const { signal } = control.controller;
+        let interrupted = false;
+
+        try {
+          // Resumes after dropped connections and checks the file against Drive's MD5.
+          await downloadFileToDisk(tokens, photo, localInput, { signal });
+          await applyWatermark(localInput, localOutput, settings);
+          await uploadFile(tokens, outputFolder.folderId, localOutput, outputName, { signal });
+
+          successful++;
+        } catch (err) {
+          if (err.name === 'AbortError' || signal.aborted) {
+            // Paused or cancelled part-way: not a failure. A paused photo is
+            // done again from the start when the batch resumes.
+            interrupted = true;
+            control.controller = new AbortController();
+            if (!getJob(jobId).cancelled) i--;
+          } else {
+            failed++;
+            errors.push({
+              filename: photo.name,
+              problem: err.message,
+              suggestedAction: 'Check file format or network connection and retry.'
+            });
+          }
+        } finally {
+          if (fs.existsSync(localInput)) fs.unlink(localInput, () => {});
+          if (fs.existsSync(localOutput)) fs.unlink(localOutput, () => {});
+          if (!interrupted) updateJob(jobId, { processed: i + 1, successful, failed });
+        }
+      }
+
+      const cancelled = Boolean(getJob(jobId).cancelled);
       const duration = Math.round((Date.now() - getJob(jobId).startTime) / 1000);
 
       const jobRecord = addJobRecord({
@@ -155,7 +189,8 @@ router.post('/process', requireAuth, async (req, res) => {
         failed,
         ignoredCount,
         duration,
-        errors
+        errors,
+        cancelled
       });
 
       completeJob(jobId, {
@@ -163,6 +198,8 @@ router.post('/process', requireAuth, async (req, res) => {
         totalPhotos: photos.length,
         successful,
         failed,
+        skipped,
+        cancelled,
         ignoredCount,
         outputFolderName: outputFolder.folderName,
         outputFolderLink: outputFolder.webViewLink,
@@ -171,8 +208,79 @@ router.post('/process', requireAuth, async (req, res) => {
     } catch (err) {
       console.error('Batch processing error:', err);
       failJob(jobId, `Batch processing failed: ${err.message}`);
+    } finally {
+      updateJob(jobId, { paused: false, pausedAt: null });
+      controls.delete(jobId);
     }
   })();
+});
+
+// ---------------------------------------------------------------------------
+// Pause / resume / cancel. Pausing stops the current transfer straight away
+// (that photo is redone on resume); cancelling stops the batch and keeps the
+// photos already finished in the output folder.
+// ---------------------------------------------------------------------------
+
+const controls = new Map(); // jobId -> { controller, resume }
+
+function waitWhilePaused(jobId) {
+  const job = getJob(jobId);
+  if (!job || !job.paused || job.cancelled) return Promise.resolve();
+  return new Promise(resolve => { controls.get(jobId).resume = resolve; });
+}
+
+function wake(control) {
+  if (control.resume) {
+    const resume = control.resume;
+    control.resume = null;
+    resume();
+  }
+}
+
+function controllableJob(req, res) {
+  const job = getJob(req.params.jobId);
+  const control = controls.get(req.params.jobId);
+  if (!job) {
+    res.status(404).json({ error: 'Job not found.' });
+    return null;
+  }
+  if (job.done || !control) {
+    res.status(409).json({ error: 'This job has already finished.' });
+    return null;
+  }
+  return { job, control };
+}
+
+router.post('/process/:jobId/pause', requireAuth, (req, res) => {
+  const found = controllableJob(req, res);
+  if (!found) return;
+  const { job, control } = found;
+  if (!job.paused) {
+    updateJob(job.jobId, { paused: true, pausedAt: Date.now() });
+    control.controller.abort();
+  }
+  res.json({ paused: true });
+});
+
+router.post('/process/:jobId/resume', requireAuth, (req, res) => {
+  const found = controllableJob(req, res);
+  if (!found) return;
+  const { job, control } = found;
+  if (job.paused) {
+    updateJob(job.jobId, { paused: false, pausedAt: null, pausedMs: job.pausedMs + (Date.now() - job.pausedAt) });
+    wake(control);
+  }
+  res.json({ paused: false });
+});
+
+router.post('/process/:jobId/cancel', requireAuth, (req, res) => {
+  const found = controllableJob(req, res);
+  if (!found) return;
+  const { job, control } = found;
+  updateJob(job.jobId, { cancelled: true });
+  control.controller.abort();
+  wake(control);
+  res.json({ cancelled: true });
 });
 
 router.get('/process/:jobId/status', requireAuth, (req, res) => {
@@ -181,9 +289,11 @@ router.get('/process/:jobId/status', requireAuth, (req, res) => {
     return res.status(404).json({ error: 'Job not found.' });
   }
 
-  const elapsedMs = Date.now() - job.startTime;
+  // Time spent paused doesn't count towards the speed estimate.
+  const pausedMs = (job.pausedMs || 0) + (job.paused && job.pausedAt ? Date.now() - job.pausedAt : 0);
+  const elapsedMs = Date.now() - job.startTime - pausedMs;
   let etaMs = null;
-  if (!job.done && job.processed > 0) {
+  if (!job.done && !job.paused && job.processed > 0) {
     const avgPerPhoto = elapsedMs / job.processed;
     etaMs = Math.round(avgPerPhoto * (job.total - job.processed));
   }
@@ -194,6 +304,8 @@ router.get('/process/:jobId/status', requireAuth, (req, res) => {
     successful: job.successful,
     failed: job.failed,
     currentFile: job.currentFile,
+    paused: Boolean(job.paused),
+    cancelled: Boolean(job.cancelled),
     elapsedMs,
     etaMs,
     done: job.done,

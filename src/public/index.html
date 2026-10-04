@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Church Photo Watermarker</title>
+  <title>Church Media Tools</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="h-full flex flex-col justify-between font-sans text-gray-900">
@@ -12,9 +12,9 @@
   <header class="bg-white border-b border-gray-200 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
       <div class="flex items-center space-x-3">
-        <div class="bg-blue-900 text-white p-2 rounded-lg font-bold text-lg tracking-wider">CPW</div>
+        <div class="bg-blue-900 text-white p-2 rounded-lg font-bold text-lg tracking-wider">CMT</div>
         <div>
-          <h1 class="text-lg font-bold text-gray-900">Church Photo Watermarker</h1>
+          <h1 class="text-lg font-bold text-gray-900"><a href="#" class="hover:text-blue-900">Church Media Tools</a></h1>
           <p class="text-xs text-gray-500">Google Drive Batch Processing System</p>
         </div>
       </div>
@@ -31,14 +31,54 @@
     <div id="login-view" class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center max-w-lg mx-auto my-12 hidden">
       <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">G</div>
       <h2 class="text-2xl font-bold text-gray-900 mb-2">Connect to Google Drive</h2>
-      <p class="text-gray-600 mb-6 text-sm">Sign in with your Google account to access your media folders and process photographs securely.</p>
+      <p class="text-gray-600 mb-6 text-sm">Sign in with your Google account to access your media folders and process photographs and videos securely.</p>
+      <div id="oauth-config-warning" class="hidden text-left bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+        <p class="text-sm font-semibold text-amber-900">Google sign-in is not configured on this computer</p>
+        <p class="text-sm text-amber-800 mt-1">Missing: <span id="oauth-missing-vars" class="font-mono"></span></p>
+        <p class="text-sm text-amber-800 mt-2">Copy the <code class="font-mono">.env</code> file from the computer where this already works into the project folder, then restart the application.</p>
+      </div>
       <a href="/auth/google" class="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg shadow transition w-full">
         Sign in with Google
       </a>
     </div>
 
     <!-- Main App View -->
-    <div id="app-view" class="space-y-6 hidden">
+    <div id="app-view" class="hidden">
+
+      <!-- Tool Dashboard -->
+      <section id="dashboard" class="space-y-6">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-gray-900">Church Media Tools</h2>
+          <p class="text-sm text-gray-600 mt-1">Choose a tool. Your original files in Google Drive are never changed.</p>
+        </div>
+        <div class="grid gap-6 sm:grid-cols-2">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
+            <div class="w-12 h-12 bg-blue-50 text-blue-700 rounded-lg flex items-center justify-center text-xl mb-4" aria-hidden="true">&#128247;</div>
+            <h3 class="text-lg font-bold text-gray-900">Photo Watermarker</h3>
+            <p class="text-sm text-gray-600 mt-1 mb-6 flex-grow">Add the church logo to photographs.</p>
+            <a href="#photo" class="text-center bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded-lg text-sm transition shadow-sm">Open Photo Watermarker</a>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
+            <div class="w-12 h-12 bg-emerald-50 text-emerald-700 rounded-lg flex items-center justify-center text-xl mb-4" aria-hidden="true">&#127916;</div>
+            <h3 class="text-lg font-bold text-gray-900">Video Converter</h3>
+            <p class="text-sm text-gray-600 mt-1 mb-6 flex-grow">Convert videos from common formats into MP4.</p>
+            <a href="#video" class="text-center bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-5 py-2.5 rounded-lg text-sm transition shadow-sm">Open Video Converter</a>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
+            <div class="w-12 h-12 bg-rose-50 text-rose-700 rounded-lg flex items-center justify-center text-xl mb-4" aria-hidden="true">&#128240;</div>
+            <h3 class="text-lg font-bold text-gray-900">Church News</h3>
+            <p class="text-sm text-gray-600 mt-1 mb-6 flex-grow">Transcribe a news video, see which posters are needed, and put the presenter in a news studio.</p>
+            <a href="#news" class="text-center bg-rose-600 hover:bg-rose-700 text-white font-medium px-5 py-2.5 rounded-lg text-sm transition shadow-sm">Open Church News</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Photo Watermarker tool -->
+      <section id="photo-tool" class="space-y-6 hidden">
+      <div class="flex items-center justify-between">
+        <a href="#" class="text-sm text-gray-600 hover:text-gray-900 font-medium">&larr; All tools</a>
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-blue-700">Photo Watermarker</h2>
+      </div>
 
       <!-- Step 1: Folder Input -->
       <div id="step-input" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -87,7 +127,7 @@
       <div id="step-processing" class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center hidden">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
         <h3 class="text-lg font-bold text-gray-900 mb-1">Processing photographs...</h3>
-        <p id="processing-status-text" class="text-sm text-gray-600 mb-6">Applying church logo at bottom-center while preserving original dimensions & quality.</p>
+        <p id="processing-status-text" class="text-sm text-gray-600 mb-6">Applying a faint church logo watermark at the center while preserving original dimensions & quality.</p>
         
         <div class="w-full bg-gray-200 rounded-full h-3 mb-4 overflow-hidden">
           <div id="progress-bar" class="bg-blue-600 h-3 rounded-full transition-all duration-300 w-0"></div>
@@ -97,6 +137,11 @@
           <span id="progress-percent">0%</span>
         </div>
         <div class="text-xs text-gray-500 mt-2" id="progress-eta">Estimating time remaining…</div>
+        <div class="flex justify-center gap-3 mt-6">
+          <button type="button" id="pause-btn" class="border border-gray-300 hover:bg-gray-50 text-gray-800 font-medium px-5 py-2 rounded-lg text-sm transition">Pause</button>
+          <button type="button" id="cancel-btn" class="border border-red-200 hover:bg-red-50 text-red-700 font-medium px-5 py-2 rounded-lg text-sm transition">Cancel</button>
+        </div>
+        <p id="pause-note" class="hidden text-xs text-amber-700 mt-3">Paused. Nothing is being uploaded. Press Resume to carry on; the photo that was interrupted is done again from the start.</p>
       </div>
 
       <!-- Step 4: Completion Screen -->
@@ -122,6 +167,385 @@
           ← Process Another Folder
         </button>
       </div>
+      </section>
+
+      <!-- Video Converter tool (logic in video.js) -->
+      <section id="video-tool" class="space-y-6 hidden">
+        <div class="flex items-center justify-between">
+          <a href="#" class="text-sm text-gray-600 hover:text-gray-900 font-medium">&larr; All tools</a>
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-emerald-700">Video Converter</h2>
+        </div>
+
+        <div id="v-engine-warning" class="hidden bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-lg p-4">
+          The video engine (FFmpeg) is not installed on the server yet, so videos cannot be converted. Please ask your administrator to install it (see README).
+        </div>
+
+        <!-- V1: Folder input -->
+        <div id="v-step-input" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-1">Video Format Converter</h2>
+          <p class="text-sm text-gray-600 mb-4">Paste the Google Drive folder containing your videos. The system will automatically convert supported videos to MP4 and place the converted copies in a new Google Drive folder. Your original videos are never changed.</p>
+          <form id="v-scan-form" class="space-y-4">
+            <div>
+              <label for="v-folder-url" class="block text-sm font-medium text-gray-700 mb-1">Google Drive folder</label>
+              <input type="text" id="v-folder-url" required placeholder="Paste Google Drive Folder Link" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm">
+            </div>
+            <div class="flex items-center justify-between gap-4">
+              <label class="flex items-center text-sm text-gray-700 cursor-pointer">
+                <input type="checkbox" id="v-include-subfolders" class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4 mr-2">
+                Include videos inside subfolders
+              </label>
+              <button type="submit" id="v-scan-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-5 py-2.5 rounded-lg text-sm transition shadow-sm">Find Videos</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- V2: Videos found -->
+        <div id="v-step-ready" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hidden">
+          <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded">Folder verified</span>
+          <h3 id="v-folder-title" class="text-xl font-bold text-gray-900 mt-2"></h3>
+          <div class="mt-4 flex items-baseline gap-3">
+            <span class="text-sm text-gray-600">Videos found:</span>
+            <span id="v-video-count" class="text-3xl font-bold text-gray-900">0</span>
+            <span id="v-video-size" class="text-sm text-gray-500"></span>
+          </div>
+          <p id="v-ignored" class="text-xs text-gray-500 mt-1"></p>
+          <details class="mt-3 text-sm">
+            <summary class="cursor-pointer text-gray-600 hover:text-gray-900">Show videos (untick any you don't want converted)</summary>
+            <ul id="v-video-list" class="mt-2 max-h-48 overflow-y-auto text-xs text-gray-700 space-y-0.5"></ul>
+          </details>
+          <p class="text-sm text-gray-600 mt-4">Converted copies will go into a new folder: <strong id="v-output-name"></strong></p>
+
+          <div id="v-duplicate-choice" class="hidden mt-4 bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <p class="text-sm font-semibold text-amber-900">This folder has been converted before.</p>
+            <p class="text-sm text-amber-800 mt-1">A folder named <strong id="v-existing-name"></strong> already exists. Nothing in it will be deleted or overwritten. What would you like to do?</p>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <button type="button" id="v-choice-new" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-lg text-sm">Create a new conversion folder</button>
+              <button type="button" id="v-choice-existing" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 font-medium px-4 py-2 rounded-lg text-sm">Reprocess into existing folder</button>
+              <button type="button" id="v-choice-cancel" class="text-gray-600 hover:text-gray-900 font-medium px-4 py-2 text-sm">Cancel</button>
+            </div>
+            <p class="text-xs text-amber-700 mt-2">"Reprocess" converts any videos not yet in that folder; videos already converted there are skipped.</p>
+          </div>
+
+          <div id="v-ready-actions" class="flex justify-end gap-3 mt-6">
+            <button type="button" id="v-reset-btn" class="text-gray-600 hover:text-gray-900 text-sm font-medium px-4 py-2">Choose Another Folder</button>
+            <button type="button" id="v-convert-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-6 py-2.5 rounded-lg text-sm transition shadow-sm">Convert Videos to MP4</button>
+          </div>
+        </div>
+
+        <!-- V3: Converting -->
+        <div id="v-step-processing" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hidden">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-gray-900">Converting videos</h3>
+            <span id="v-count" class="text-sm font-semibold text-gray-700">0 / 0</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-3 mt-3 overflow-hidden">
+            <div id="v-progress-bar" class="bg-emerald-600 h-3 rounded-full transition-all duration-300" style="width:0%"></div>
+          </div>
+          <dl class="grid grid-cols-3 gap-4 mt-4 text-sm">
+            <div class="col-span-3 sm:col-span-1 min-w-0"><dt class="text-xs text-gray-500">Current</dt><dd id="v-current" class="font-medium text-gray-900 truncate">—</dd></div>
+            <div><dt class="text-xs text-gray-500">Status</dt><dd id="v-current-status" class="font-medium text-gray-900">Starting…</dd></div>
+            <div><dt class="text-xs text-gray-500">Progress</dt><dd id="v-current-progress" class="font-medium text-gray-900">0%</dd></div>
+          </dl>
+          <p id="v-elapsed" class="text-xs text-gray-500 mt-2"></p>
+          <ul id="v-file-list" class="mt-4 border-t border-gray-100 pt-3 max-h-72 overflow-y-auto text-sm space-y-1"></ul>
+          <div class="flex justify-between items-center mt-4">
+            <p class="text-xs text-gray-500">You can close this page; conversion continues on the server.</p>
+            <button type="button" id="v-cancel-btn" class="text-red-600 hover:text-red-800 text-sm font-medium px-4 py-2">Stop converting</button>
+          </div>
+        </div>
+
+        <!-- V4: Complete -->
+        <div id="v-step-complete" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hidden">
+          <div class="text-center">
+            <div id="v-complete-icon" class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl font-bold">✓</div>
+            <h3 id="v-complete-title" class="text-2xl font-bold text-gray-900">Conversion Complete</h3>
+            <p id="v-complete-summary" class="text-sm text-gray-600 mt-1"></p>
+          </div>
+          <dl class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 text-center">
+            <div class="bg-gray-50 rounded-lg p-3"><dt class="text-xs text-gray-500">Total</dt><dd id="v-sum-total" class="text-xl font-bold">0</dd></div>
+            <div class="bg-emerald-50 rounded-lg p-3"><dt class="text-xs text-emerald-700">Successful</dt><dd id="v-sum-ok" class="text-xl font-bold text-emerald-800">0</dd></div>
+            <div class="bg-red-50 rounded-lg p-3"><dt class="text-xs text-red-700">Failed</dt><dd id="v-sum-failed" class="text-xl font-bold text-red-800">0</dd></div>
+            <div class="bg-gray-50 rounded-lg p-3"><dt class="text-xs text-gray-500">Skipped</dt><dd id="v-sum-skipped" class="text-xl font-bold">0</dd></div>
+          </dl>
+          <div class="bg-gray-50 rounded-lg p-4 mt-6 border border-gray-200 max-w-md mx-auto">
+            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Converted videos</span>
+            <span id="v-output-folder-name" class="text-sm font-bold text-gray-900 block mb-3"></span>
+            <a id="v-output-folder-link" href="#" target="_blank" rel="noopener" class="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded-lg text-sm w-full transition shadow-sm">Open Converted Videos</a>
+          </div>
+          <div id="v-failed-container" class="hidden mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex items-center justify-between gap-2">
+              <h4 class="text-sm font-bold text-red-800">Videos that could not be converted</h4>
+              <button type="button" id="v-retry-btn" class="bg-white border border-red-300 hover:bg-red-100 text-red-800 font-medium px-3 py-1.5 rounded text-xs">Retry failed videos</button>
+            </div>
+            <div id="v-failed-list" class="mt-3 space-y-3 text-sm"></div>
+          </div>
+          <details class="mt-6 text-sm">
+            <summary class="cursor-pointer text-gray-700 font-medium">Detailed report (source vs. converted)</summary>
+            <div id="v-report" class="mt-3 space-y-3"></div>
+          </details>
+          <div class="text-center mt-6">
+            <button type="button" id="v-another-btn" class="text-emerald-700 hover:text-emerald-900 text-sm font-medium">&larr; Convert Another Folder</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Church News tool (logic in news.js) -->
+      <section id="news-tool" class="space-y-6 hidden">
+        <div class="flex items-center justify-between">
+          <a href="#" class="text-sm text-gray-600 hover:text-gray-900 font-medium">&larr; All tools</a>
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-rose-700">Church News</h2>
+        </div>
+
+        <div id="n-ffmpeg-warning" class="hidden bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-lg p-4">
+          The video engine (FFmpeg) is not installed on this computer, so videos cannot be read yet. Please ask your administrator to install it (see README).
+        </div>
+
+        <!-- N1: upload + past projects -->
+        <div id="n-list-view" class="space-y-6">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-1">New news video</h2>
+            <p class="text-sm text-gray-600 mb-4">Choose the church news video. This computer will write down everything that is said, list the posters the announcements need, and can put the presenter into a news studio if the video was filmed in front of a green screen. Nothing is sent to an online service.</p>
+            <label id="n-drop" for="n-file" class="block border-2 border-dashed border-gray-300 hover:border-rose-400 rounded-xl p-8 text-center cursor-pointer transition">
+              <span class="block text-3xl mb-2" aria-hidden="true">&#127909;</span>
+              <span class="block text-sm font-medium text-gray-800">Click to choose a video, or drag it here</span>
+              <span class="block text-xs text-gray-500 mt-1">MP4, MOV, MKV, AVI, WEBM…</span>
+              <input type="file" id="n-file" accept="video/*,.mkv,.mts,.m2ts" class="sr-only">
+            </label>
+            <div id="n-upload" class="hidden mt-4">
+              <div class="flex justify-between text-xs text-gray-600 mb-1"><span id="n-upload-name"></span><span id="n-upload-percent">0%</span></div>
+              <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden"><div id="n-upload-bar" class="bg-rose-600 h-2 rounded-full transition-all duration-300 w-0"></div></div>
+            </div>
+            <div class="mt-4 border-t border-gray-100 pt-4">
+              <p class="text-sm font-medium text-gray-800 mb-2">…or get it from Google Drive</p>
+              <div class="flex gap-2">
+                <input type="text" id="n-drive-url" placeholder="Paste a Google Drive folder link" class="flex-1 min-w-0 border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <button type="button" id="n-drive-list" class="bg-rose-600 hover:bg-rose-700 text-white text-sm font-medium px-4 py-2 rounded-lg">Find videos</button>
+              </div>
+              <p id="n-drive-msg" class="text-xs text-gray-500 mt-2"></p>
+              <div id="n-drive-videos" class="divide-y divide-gray-100 text-sm mt-2"></div>
+              <div id="n-drive-progress" class="hidden mt-3">
+                <div class="flex justify-between text-xs text-gray-600 mb-1"><span id="n-drive-pname"></span><span><span id="n-drive-ppct">0%</span> <button type="button" id="n-drive-cancel" class="text-rose-700 underline ml-2">Cancel</button></span></div>
+                <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden"><div id="n-drive-bar" class="bg-rose-600 h-2 rounded-full transition-all duration-300 w-0"></div></div>
+              </div>
+            </div>
+            <p id="n-model-note" class="hidden text-xs text-gray-500 mt-3"></p>
+          </div>
+
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-3">Past news videos</h2>
+            <div id="n-projects" class="divide-y divide-gray-100 text-sm"></div>
+          </div>
+        </div>
+
+        <!-- N2: one project -->
+        <div id="n-project-view" class="hidden space-y-6">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-start justify-between gap-4">
+              <div class="min-w-0">
+                <a href="#news" class="text-xs text-rose-700 hover:text-rose-900 font-medium">&larr; All news videos</a>
+                <h3 id="n-title" class="text-xl font-bold text-gray-900 mt-1 truncate"></h3>
+                <p id="n-meta" class="text-sm text-gray-600 mt-1"></p>
+              </div>
+              <div class="flex gap-2 flex-shrink-0">
+                <button type="button" id="n-rename-btn" class="border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-lg">Rename</button>
+                <button type="button" id="n-delete-btn" class="border border-red-200 hover:bg-red-50 text-red-700 text-xs font-medium px-3 py-1.5 rounded-lg">Delete</button>
+              </div>
+            </div>
+
+            <div id="n-job" class="hidden mt-5 bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <div class="flex items-center justify-between gap-3">
+                <p id="n-job-label" class="text-sm font-medium text-gray-900"></p>
+                <button type="button" id="n-cancel-btn" class="text-xs text-gray-600 hover:text-red-700 font-medium">Cancel</button>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2 mt-2 overflow-hidden"><div id="n-job-bar" class="bg-rose-600 h-2 rounded-full transition-all duration-500 w-0"></div></div>
+              <p id="n-job-detail" class="text-xs text-gray-500 mt-2"></p>
+            </div>
+            <div id="n-job-error" class="hidden mt-5 bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <p class="text-sm font-semibold text-amber-900" id="n-job-error-title"></p>
+              <pre id="n-job-error-text" class="text-xs text-amber-800 whitespace-pre-wrap mt-1"></pre>
+              <button type="button" id="n-retry-btn" class="mt-2 text-sm text-rose-700 hover:text-rose-900 font-medium">Try again</button>
+            </div>
+            <div id="n-no-audio" class="hidden mt-5 bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-lg p-4">This video has no sound track, so there is nothing to transcribe. You can still put it in the news studio below.</div>
+
+            <video id="n-player" controls preload="metadata" class="w-full max-h-96 bg-black rounded-lg mt-5"></video>
+          </div>
+
+          <!-- Posters -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between gap-3 mb-1">
+              <h3 class="text-lg font-semibold text-gray-900">Posters needed <span id="n-poster-count" class="text-gray-400 font-normal"></span></h3>
+              <div class="flex gap-2">
+                <button type="button" id="n-add-poster" class="border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-lg">+ Add poster</button>
+                <a id="n-posters-download" href="#" class="border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-lg">Download list</a>
+              </div>
+            </div>
+            <p class="text-sm text-gray-600 mb-4">Found from the announcements in the video. Check each one, fix anything misheard, and tick it off when the poster is made. Changes save automatically.</p>
+            <div id="n-posters-empty" class="hidden text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded-lg p-4"></div>
+            <div id="n-posters" class="space-y-4"></div>
+            <div id="n-other-wrap" class="hidden mt-5">
+              <h4 class="text-sm font-semibold text-gray-800">Other things mentioned</h4>
+              <p class="text-xs text-gray-500 mb-2">These sounded like events but gave no date, time, place or way to sign up. Add a poster if one is needed.</p>
+              <ul id="n-other" class="space-y-2 text-sm"></ul>
+            </div>
+            <div class="mt-4 text-right">
+              <button type="button" id="n-redetect" class="text-xs text-gray-500 hover:text-rose-700">Find posters again from the transcript (replaces your edits)</button>
+            </div>
+          </div>
+
+          <!-- Transcript -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between gap-3 mb-3">
+              <h3 class="text-lg font-semibold text-gray-900">Transcript</h3>
+              <div class="flex gap-2">
+                <a id="n-txt-download" href="#" class="border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-lg">Download text</a>
+                <a id="n-srt-download" href="#" class="border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-lg">Download subtitles (.srt)</a>
+              </div>
+            </div>
+            <p class="text-xs text-gray-500 mb-3">Click a time to jump to that moment in the video.</p>
+            <div id="n-transcript" class="max-h-96 overflow-y-auto text-sm leading-relaxed space-y-1 pr-2"></div>
+          </div>
+
+          <!-- News studio -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-1">News studio video</h3>
+            <p class="text-sm text-gray-600 mb-5">For videos filmed in front of a green screen: the green is removed and the presenter is placed in a news studio, with their name, the main headlines, and a moving bar of smaller headlines. Make a preview first to check the green is fully gone.</p>
+            <div class="mb-6 border border-gray-200 rounded-xl p-4">
+              <p class="text-sm font-semibold text-gray-900">This week's pictures</p>
+              <p class="text-xs text-gray-500 mb-2">Paste the Google Drive folder with this week's photos. They scroll on the screen at the right of the studio. Pictures whose file name starts with "poster" go on the poster screen at the left instead. Replaces last week's pictures.</p>
+              <div class="flex gap-2">
+                <input type="text" id="n-bg-url" placeholder="Paste a Google Drive folder link" class="flex-1 min-w-0 border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <button type="button" id="n-bg-get" class="bg-rose-600 hover:bg-rose-700 text-white text-sm font-medium px-4 py-2 rounded-lg">Get pictures</button>
+              </div>
+              <p id="n-bg-msg" class="text-xs text-gray-600 mt-2"></p>
+            </div>
+            <form id="n-studio-form" class="space-y-6">
+
+              <fieldset>
+                <legend class="text-sm font-semibold text-gray-900 mb-2">1. Video shape</legend>
+                <div class="grid grid-cols-2 gap-3 max-w-md">
+                  <label class="n-format-card cursor-pointer border-2 rounded-xl p-3 flex items-center gap-3">
+                    <input type="radio" name="n-s-format" value="portrait" class="sr-only">
+                    <span class="block w-6 h-10 border-2 border-current rounded-sm flex-shrink-0" aria-hidden="true"></span>
+                    <span><span class="block text-sm font-semibold">Portrait</span><span class="block text-xs text-gray-500">Tall, for phones &amp; social media</span></span>
+                  </label>
+                  <label class="n-format-card cursor-pointer border-2 rounded-xl p-3 flex items-center gap-3">
+                    <input type="radio" name="n-s-format" value="landscape" class="sr-only">
+                    <span class="block w-10 h-6 border-2 border-current rounded-sm flex-shrink-0" aria-hidden="true"></span>
+                    <span><span class="block text-sm font-semibold">Landscape</span><span class="block text-xs text-gray-500">Wide, for presentation screens</span></span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset>
+                <legend class="text-sm font-semibold text-gray-900 mb-1">2. Presenter</legend>
+                <p class="text-xs text-gray-500 mb-2">Type these in: names are often not clear in the recording, especially in another language.</p>
+                <div class="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label for="n-s-name" class="block text-sm font-medium text-gray-700 mb-1">Presenter's name</label>
+                    <input type="text" id="n-s-name" maxlength="60" placeholder="e.g. Pastor Thabo Mokoena" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  </div>
+                  <div>
+                    <label for="n-s-role" class="block text-sm font-medium text-gray-700 mb-1">Position / where they serve</label>
+                    <input type="text" id="n-s-role" maxlength="80" placeholder="e.g. Youth Pastor, Soshanguve Branch" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  </div>
+                  <div>
+                    <label for="n-s-namemode" class="block text-sm font-medium text-gray-700 mb-1">Show the name</label>
+                    <select id="n-s-namemode" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                      <option value="always">For the whole video</option>
+                      <option value="start">For the first 10 seconds only</option>
+                    </select>
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset>
+                <div class="flex items-center justify-between gap-3 mb-1">
+                  <legend class="text-sm font-semibold text-gray-900">3. Main headlines</legend>
+                  <button type="button" id="n-h-suggest" class="text-xs text-rose-700 hover:text-rose-900 font-medium">Suggest again from posters</button>
+                </div>
+                <p class="text-xs text-gray-500 mb-2">Shown large in the main bar. Each one appears at its time and stays until the next one. Press ▶ to hear that part of the video and confirm the headline matches what is said.</p>
+                <div id="n-h-note" class="hidden text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-3 py-2 mb-2">These were suggested from the video. Please check each one, then tick it.</div>
+                <div id="n-headlines" class="space-y-2"></div>
+                <button type="button" id="n-h-add" class="mt-2 border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-lg">+ Add headline at the video's current time</button>
+              </fieldset>
+
+              <fieldset>
+                <div class="flex items-center justify-between mb-1">
+                  <legend class="text-sm font-semibold text-gray-900">4. Smaller headlines (the moving bar)</legend>
+                  <button type="button" id="n-s-fill" class="text-xs text-rose-700 hover:text-rose-900 font-medium">Fill from posters</button>
+                </div>
+                <p class="text-xs text-gray-500 mb-2">These scroll across the bottom the whole time. One per line.</p>
+                <textarea id="n-s-ticker" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Left empty, the poster titles and dates are used."></textarea>
+              </fieldset>
+
+              <fieldset>
+                <legend class="text-sm font-semibold text-gray-900 mb-2">5. Look</legend>
+                <div class="grid gap-4 sm:grid-cols-3">
+                  <div>
+                    <label for="n-s-network" class="block text-sm font-medium text-gray-700 mb-1">Name on the corner badge</label>
+                    <input type="text" id="n-s-network" maxlength="60" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <label class="flex items-center text-xs text-gray-600 mt-1"><input type="checkbox" id="n-s-logo" class="rounded border-gray-300 w-4 h-4 mr-2">Show the church logo on the badge</label>
+                  </div>
+                  <div>
+                    <label for="n-s-headline" class="block text-sm font-medium text-gray-700 mb-1">Red label on the main bar</label>
+                    <input type="text" id="n-s-headline" maxlength="40" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  </div>
+                  <div>
+                    <label for="n-s-ticker-label" class="block text-sm font-medium text-gray-700 mb-1">Red label on the moving bar</label>
+                    <input type="text" id="n-s-ticker-label" maxlength="30" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  </div>
+                  <div class="sm:col-span-3">
+                    <label class="inline-flex items-center text-sm text-gray-700"><input type="checkbox" id="n-s-live" class="rounded border-gray-300 w-4 h-4 mr-2">Show a "LIVE" badge with a time</label>
+                    <input type="text" id="n-s-clock" maxlength="12" placeholder="e.g. 18:00" class="hidden ml-3 w-28 px-3 py-1.5 border border-gray-300 rounded-lg text-sm">
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset>
+                <legend class="text-sm font-semibold text-gray-900 mb-2">6. Green removal and presenter position</legend>
+                <div class="grid gap-4 sm:grid-cols-2">
+                  <div class="sm:col-span-2">
+                    <label for="n-s-key" class="block text-sm font-medium text-gray-700 mb-1">Green removal: <span id="n-s-key-value"></span></label>
+                    <input type="range" id="n-s-key" min="20" max="150" step="1" class="w-full accent-rose-600">
+                    <p class="text-xs text-gray-500">Move left if green is still showing around the presenter. Move right if parts of the presenter turn see-through.</p>
+                  </div>
+                  <div>
+                    <label for="n-s-zoom" class="block text-sm font-medium text-gray-700 mb-1">Presenter size: <span id="n-s-zoom-value"></span></label>
+                    <input type="range" id="n-s-zoom" min="0.5" max="2" step="0.05" class="w-full accent-rose-600">
+                  </div>
+                  <div>
+                    <label for="n-s-x" class="block text-sm font-medium text-gray-700 mb-1">Move left / right</label>
+                    <input type="range" id="n-s-x" min="-0.5" max="0.5" step="0.01" class="w-full accent-rose-600">
+                  </div>
+                  <div>
+                    <label for="n-s-y" class="block text-sm font-medium text-gray-700 mb-1">Move up / down</label>
+                    <input type="range" id="n-s-y" min="-0.5" max="0.5" step="0.01" class="w-full accent-rose-600">
+                  </div>
+                </div>
+              </fieldset>
+
+              <div class="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                <span id="n-studio-saved" class="text-xs text-gray-400 mr-auto"></span>
+                <button type="button" id="n-preview-btn" class="border border-gray-300 hover:bg-gray-50 text-gray-800 font-medium px-5 py-2.5 rounded-lg text-sm">Preview one frame</button>
+                <button type="button" id="n-render-btn" class="bg-rose-600 hover:bg-rose-700 text-white font-medium px-5 py-2.5 rounded-lg text-sm shadow-sm">Make news video</button>
+              </div>
+            </form>
+            <p class="text-xs text-gray-500 mt-2">The first preview downloads the studio's renderer once (about 100 MB). Making the full video is slow on an ordinary computer (on a 4-core office PC, about 12 minutes for each minute of video), so start it and come back later; it keeps going if you close this page.</p>
+
+            <div class="grid gap-6 sm:grid-cols-2 mt-6">
+              <div id="n-preview-wrap" class="hidden">
+                <h4 class="text-sm font-semibold text-gray-800 mb-2">Preview</h4>
+                <img id="n-preview-img" alt="Preview frame of the news studio" class="w-full max-w-xs rounded-lg border border-gray-200">
+              </div>
+              <div id="n-output-wrap" class="hidden">
+                <h4 class="text-sm font-semibold text-gray-800 mb-2">Finished news video</h4>
+                <video id="n-output" controls preload="metadata" class="w-full max-w-xs rounded-lg bg-black"></video>
+                <a id="n-output-download" href="#" class="mt-3 inline-flex items-center justify-center bg-rose-600 hover:bg-rose-700 text-white font-medium px-5 py-2.5 rounded-lg text-sm shadow-sm">Download MP4</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
     </div>
 
@@ -175,14 +599,92 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Bottom Margin (% of image height)</label>
-          <input type="number" id="set-margin" min="0" max="20" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Watermark Opacity (% — lower is fainter)</label>
+          <input type="number" id="set-opacity" min="1" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">JPEG Quality (1 - 100)</label>
           <input type="number" id="set-quality" min="50" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
         </div>
+
+        <details id="video-settings" class="border-t border-gray-100 pt-4">
+          <summary class="cursor-pointer text-sm font-semibold text-gray-800">Video Converter (advanced)</summary>
+          <p class="text-xs text-gray-500 mt-2 mb-3">The defaults work for everyone. Change these only if you know you need to.</p>
+          <div class="space-y-3">
+            <div>
+              <label for="set-v-codec" class="block text-sm font-medium text-gray-700 mb-1">Preferred video codec (when re-encoding)</label>
+              <select id="set-v-codec" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                <option value="h264">H.264 — plays everywhere (recommended)</option>
+                <option value="hevc">H.265/HEVC — smaller files, less compatible</option>
+              </select>
+            </div>
+            <label class="flex items-center text-sm text-gray-700"><input type="checkbox" id="set-v-keep-hevc" class="rounded border-gray-300 w-4 h-4 mr-2">Keep H.265/HEVC videos as-is (remux) instead of converting to H.264</label>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label for="set-v-crf" class="block text-sm font-medium text-gray-700 mb-1">Quality (CRF, lower = better)</label>
+                <input type="number" id="set-v-crf" min="0" max="51" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+              <div>
+                <label for="set-v-preset" class="block text-sm font-medium text-gray-700 mb-1">Encoding speed (preset)</label>
+                <select id="set-v-preset" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  <option>veryfast</option><option>faster</option><option>fast</option><option>medium</option><option>slow</option><option>slower</option>
+                </select>
+              </div>
+              <div>
+                <label for="set-v-audio" class="block text-sm font-medium text-gray-700 mb-1">AAC audio bitrate (kbps, stereo)</label>
+                <input type="number" id="set-v-audio" min="96" max="512" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+              <div>
+                <label for="set-v-retries" class="block text-sm font-medium text-gray-700 mb-1">Network retries</label>
+                <input type="number" id="set-v-retries" min="0" max="10" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+              <div>
+                <label for="set-v-files" class="block text-sm font-medium text-gray-700 mb-1">Videos at once (0 = auto)</label>
+                <input type="number" id="set-v-files" min="0" max="8" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+              <div>
+                <label for="set-v-encodes" class="block text-sm font-medium text-gray-700 mb-1">Re-encodes at once (0 = auto)</label>
+                <input type="number" id="set-v-encodes" min="0" max="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+            </div>
+            <div>
+              <label for="set-v-suffix" class="block text-sm font-medium text-gray-700 mb-1">Output folder name suffix</label>
+              <input type="text" id="set-v-suffix" maxlength="60" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+            </div>
+            <label class="flex items-center text-sm text-gray-700"><input type="checkbox" id="set-v-metadata" class="rounded border-gray-300 w-4 h-4 mr-2">Preserve metadata (creation date, title, copyright…)</label>
+            <label class="flex items-center text-sm text-gray-700"><input type="checkbox" id="set-v-fulldecode" class="rounded border-gray-300 w-4 h-4 mr-2">Thorough check: decode every frame of each output (slower)</label>
+          </div>
+        </details>
+
+        <details id="news-settings" class="border-t border-gray-100 pt-4">
+          <summary class="cursor-pointer text-sm font-semibold text-gray-800">Church News</summary>
+          <div class="space-y-3 mt-3">
+            <div>
+              <label for="set-n-network" class="block text-sm font-medium text-gray-700 mb-1">Name on the news badge</label>
+              <input type="text" id="set-n-network" maxlength="60" placeholder="e.g. CFC Pretoria North" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+            </div>
+            <div>
+              <label for="set-n-language" class="block text-sm font-medium text-gray-700 mb-1">Language spoken in the videos</label>
+              <select id="set-n-language" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                <option value="english">English</option><option value="afrikaans">Afrikaans</option><option value="zulu">isiZulu</option>
+                <option value="xhosa">isiXhosa</option><option value="sotho">Sesotho</option><option value="tswana">Setswana</option>
+                <option value="french">French</option><option value="portuguese">Portuguese</option><option value="swahili">Swahili</option>
+                <option value="auto">Detect automatically</option>
+              </select>
+              <label class="flex items-center text-sm text-gray-700 mt-2"><input type="checkbox" id="set-n-translate" class="rounded border-gray-300 w-4 h-4 mr-2">Write the transcript in English (translate from the language above)</label>
+            </div>
+            <div>
+              <label for="set-n-model" class="block text-sm font-medium text-gray-700 mb-1">Transcription accuracy</label>
+              <select id="set-n-model" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                <option value="tiny">Fast (less accurate)</option>
+                <option value="base">Balanced (recommended)</option>
+                <option value="small">Most accurate (about 3× slower, needs more memory)</option>
+              </select>
+              <p class="text-xs text-gray-500 mt-1">A new choice downloads its speech model once, the first time it is used.</p>
+            </div>
+          </div>
+        </details>
 
         <div class="flex justify-end space-x-3 pt-4 border-t border-gray-100">
           <button type="button" onclick="closeSettingsModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-4 py-2 rounded-lg text-sm">Cancel</button>
@@ -210,7 +712,7 @@
 
   <!-- Footer -->
   <footer class="bg-white border-t border-gray-200 py-4 text-center text-xs text-gray-500">
-    Church Photo Watermarker • Professional Media Management
+    Church Media Tools • Professional Media Management
   </footer>
 
   <script>
@@ -232,14 +734,41 @@
           `;
           loginView.classList.add('hidden');
           appView.classList.remove('hidden');
+          showToolFromHash();
         } else {
           authContainer.innerHTML = '';
           loginView.classList.remove('hidden');
           appView.classList.add('hidden');
+
+          // Warn up front when the server has no Google credentials, instead of
+          // letting the user click through to a Google "invalid_request" page.
+          const warning = document.getElementById('oauth-config-warning');
+          if (data.configured === false) {
+            document.getElementById('oauth-missing-vars').textContent = (data.missing || []).join(', ');
+            warning.classList.remove('hidden');
+          } else {
+            warning.classList.add('hidden');
+          }
         }
       } catch (err) {
         console.error('Auth check error:', err);
       }
+    }
+
+    // Simple hash router: #photo, #video, #news[/project-id], or the tool dashboard.
+    function showToolFromHash() {
+      const [tool, sub] = location.hash.replace('#', '').split('/');
+      document.getElementById('dashboard').classList.toggle('hidden', ['photo', 'video', 'news'].includes(tool));
+      document.getElementById('photo-tool').classList.toggle('hidden', tool !== 'photo');
+      document.getElementById('video-tool').classList.toggle('hidden', tool !== 'video');
+      document.getElementById('news-tool').classList.toggle('hidden', tool !== 'news');
+      if (tool === 'video' && window.VideoConverter) window.VideoConverter.onOpen();
+      if (tool === 'news' && window.ChurchNews) window.ChurchNews.onOpen(sub || null);
+    }
+    window.addEventListener('hashchange', showToolFromHash);
+
+    function escapeHtml(value) {
+      return String(value == null ? '' : value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     }
 
     checkAuth();
@@ -344,7 +873,11 @@
       document.getElementById('step-processing').classList.add('hidden');
       document.getElementById('step-complete').classList.remove('hidden');
 
-      document.getElementById('complete-summary').textContent = `${data.successful} photographs processed successfully. ${data.failed > 0 ? `${data.failed} failed.` : ''}`;
+      const title = document.querySelector('#step-complete h3');
+      title.textContent = data.cancelled ? 'Processing Cancelled' : 'Processing Complete';
+      document.getElementById('complete-summary').textContent = data.cancelled
+        ? `Stopped early. ${data.successful} of ${data.totalPhotos} photographs were watermarked and are in the folder below; the rest were not processed.${data.failed > 0 ? ` ${data.failed} failed.` : ''}`
+        : `${data.successful} photographs processed successfully. ${data.skipped ? `${data.skipped} were already in the folder and were skipped. ` : ''}${data.failed > 0 ? `${data.failed} failed.` : ''}`;
       document.getElementById('output-folder-name').textContent = data.outputFolderName;
       document.getElementById('output-folder-link').href = data.outputFolderLink;
 
@@ -399,6 +932,27 @@
         const { jobId, totalPhotos } = startData;
         progressCount.textContent = `0 / ${totalPhotos} processed`;
 
+        const pauseBtn = document.getElementById('pause-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const control = async action => {
+          pauseBtn.disabled = cancelBtn.disabled = true;
+          try {
+            const r = await fetch(`/api/drive/process/${jobId}/${action}`, { method: 'POST' });
+            const d = await r.json().catch(() => ({}));
+            if (!r.ok && r.status !== 409) alert(d.error || 'That did not work. Please try again.');
+          } finally {
+            pauseBtn.disabled = cancelBtn.disabled = false;
+          }
+        };
+        pauseBtn.textContent = 'Pause';
+        pauseBtn.classList.remove('hidden');
+        cancelBtn.classList.remove('hidden');
+        document.getElementById('pause-note').classList.add('hidden');
+        pauseBtn.onclick = () => control(pauseBtn.textContent === 'Pause' ? 'pause' : 'resume');
+        cancelBtn.onclick = () => {
+          if (confirm('Stop processing? Photos already finished stay in the output folder; the rest will not be processed.')) control('cancel');
+        };
+
         const poll = async () => {
           try {
             const statusRes = await fetch(`/api/drive/process/${jobId}/status`);
@@ -409,11 +963,21 @@
             progressBar.style.width = `${percent}%`;
             progressPercent.textContent = `${percent}%`;
             progressCount.textContent = `${status.processed} / ${status.total} processed`;
-            statusText.textContent = status.currentFile && !status.done
-              ? `Applying church logo to "${status.currentFile}"...`
-              : 'Applying church logo at bottom-center while preserving original dimensions & quality.';
+            statusText.textContent = status.cancelled && !status.done
+              ? 'Stopping…'
+              : status.paused
+                ? 'Paused'
+                : status.currentFile && !status.done
+                  ? `Applying church logo to "${status.currentFile}"...`
+                  : 'Applying the church logo watermark at the center while preserving original dimensions & quality.';
+            pauseBtn.textContent = status.paused ? 'Resume' : 'Pause';
+            document.getElementById('pause-note').classList.toggle('hidden', !status.paused || status.cancelled);
+            document.querySelector('#step-processing .animate-spin').classList.toggle('hidden', status.paused);
 
             if (status.done) {
+              pauseBtn.classList.add('hidden');
+              cancelBtn.classList.add('hidden');
+              document.querySelector('#step-processing .animate-spin').classList.remove('hidden');
               progressEta.textContent = `Done in ${formatDuration(status.elapsedMs)}`;
               stopPolling();
               if (status.error) throw new Error(status.error);
@@ -421,9 +985,11 @@
               return;
             }
 
-            progressEta.textContent = status.etaMs != null
-              ? `~${formatDuration(status.etaMs)} remaining`
-              : 'Estimating time remaining…';
+            progressEta.textContent = status.paused
+              ? 'Paused'
+              : status.etaMs != null
+                ? `~${formatDuration(status.etaMs)} remaining`
+                : 'Estimating time remaining…';
 
             pollTimer = setTimeout(poll, 1000);
           } catch (pollErr) {
@@ -451,12 +1017,33 @@
         const res = await fetch('/api/settings');
         const settings = await res.json();
         document.getElementById('set-logo-width').value = settings.logoWidthPercent;
-        document.getElementById('set-margin').value = settings.bottomMarginPercent;
+        document.getElementById('set-opacity').value = settings.watermarkOpacity;
         document.getElementById('set-quality').value = settings.jpegQuality;
         document.getElementById('logo-preview').src = `/api/settings/logo?t=${Date.now()}`;
+        document.getElementById('set-v-codec').value = settings.videoCodec || 'h264';
+        document.getElementById('set-v-keep-hevc').checked = Boolean(settings.videoKeepHevc);
+        document.getElementById('set-v-crf').value = settings.videoCrf;
+        document.getElementById('set-v-preset').value = settings.videoPreset || 'medium';
+        document.getElementById('set-v-audio').value = settings.videoAudioBitrateKbps;
+        document.getElementById('set-v-retries').value = settings.videoRetryCount;
+        document.getElementById('set-v-files').value = settings.videoMaxConcurrentFiles;
+        document.getElementById('set-v-encodes').value = settings.videoMaxConcurrentEncodes;
+        document.getElementById('set-v-suffix').value = settings.videoOutputFolderSuffix;
+        document.getElementById('set-v-metadata').checked = settings.videoPreserveMetadata !== false;
+        document.getElementById('set-v-fulldecode').checked = Boolean(settings.videoFullDecodeCheck);
+        document.getElementById('set-n-network').value = settings.newsNetworkName || '';
+        document.getElementById('set-n-language').value = settings.newsLanguage || 'english';
+        document.getElementById('set-n-model').value = settings.newsWhisperModel || 'base';
+        document.getElementById('set-n-translate').checked = settings.newsTranslateToEnglish === true;
       } catch (err) {
         console.error('Error loading settings:', err);
       }
+    }
+
+    // Blank numeric fields are left out so they never overwrite a stored value with 0.
+    function optionalNumber(id) {
+      const value = document.getElementById(id).value;
+      return value === '' ? undefined : Number(value);
     }
 
     function closeSettingsModal() {
@@ -467,8 +1054,23 @@
       e.preventDefault();
       const payload = {
         logoWidthPercent: Number(document.getElementById('set-logo-width').value),
-        bottomMarginPercent: Number(document.getElementById('set-margin').value),
-        jpegQuality: Number(document.getElementById('set-quality').value)
+        watermarkOpacity: Number(document.getElementById('set-opacity').value),
+        jpegQuality: Number(document.getElementById('set-quality').value),
+        videoCodec: document.getElementById('set-v-codec').value,
+        videoKeepHevc: document.getElementById('set-v-keep-hevc').checked,
+        videoCrf: optionalNumber('set-v-crf'),
+        videoPreset: document.getElementById('set-v-preset').value,
+        videoAudioBitrateKbps: optionalNumber('set-v-audio'),
+        videoRetryCount: optionalNumber('set-v-retries'),
+        videoMaxConcurrentFiles: optionalNumber('set-v-files'),
+        videoMaxConcurrentEncodes: optionalNumber('set-v-encodes'),
+        videoOutputFolderSuffix: document.getElementById('set-v-suffix').value || undefined,
+        videoPreserveMetadata: document.getElementById('set-v-metadata').checked,
+        videoFullDecodeCheck: document.getElementById('set-v-fulldecode').checked,
+        newsNetworkName: document.getElementById('set-n-network').value.trim() || undefined,
+        newsLanguage: document.getElementById('set-n-language').value,
+        newsWhisperModel: document.getElementById('set-n-model').value,
+        newsTranslateToEnglish: document.getElementById('set-n-translate').checked
       };
 
       try {
@@ -525,15 +1127,22 @@
           return;
         }
 
-        listContainer.innerHTML = history.map(job => `
-          <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 flex justify-between items-center">
+        listContainer.innerHTML = history.map(job => {
+          const isVideo = job.type === 'video';
+          const counts = isVideo
+            ? `${job.totalVideos} videos (${job.successful} converted${job.failed > 0 ? `, ${job.failed} failed` : ''}${job.skipped > 0 ? `, ${job.skipped} skipped` : ''})`
+            : `${job.totalPhotos} photos (${job.successful} successful${job.failed > 0 ? `, ${job.failed} failed` : ''})`;
+          const link = /^https:\/\/drive\.google\.com\//.test(job.outputFolderLink || '') ? job.outputFolderLink : null;
+          return `
+          <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 flex justify-between items-center gap-3">
             <div>
-              <h4 class="text-sm font-bold text-gray-900">${job.sourceFolderName}</h4>
-              <p class="text-xs text-gray-500 mt-0.5">${new Date(job.date).toLocaleString()} • ${job.totalPhotos} photos (${job.successful} successful${job.failed > 0 ? `, ${job.failed} failed` : ''})</p>
+              <span class="text-[10px] font-semibold uppercase tracking-wider ${isVideo ? 'text-emerald-700' : 'text-blue-700'}">${isVideo ? 'Video Converter' : 'Photo Watermarker'}</span>
+              <h4 class="text-sm font-bold text-gray-900">${escapeHtml(job.sourceFolderName)}</h4>
+              <p class="text-xs text-gray-500 mt-0.5">${new Date(job.date).toLocaleString()} • ${counts}</p>
             </div>
-            ${job.outputFolderLink ? `<a href="${job.outputFolderLink}" target="_blank" class="bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium px-3 py-1.5 rounded text-xs transition">Open Folder</a>` : ''}
-          </div>
-        `).join('');
+            ${link ? `<a href="${escapeHtml(link)}" target="_blank" rel="noopener" class="bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium px-3 py-1.5 rounded text-xs transition whitespace-nowrap">Open Folder</a>` : ''}
+          </div>`;
+        }).join('');
       } catch (err) {
         listContainer.innerHTML = '<p class="text-sm text-red-500 text-center py-6">Failed to load history.</p>';
       }
@@ -543,5 +1152,7 @@
       document.getElementById('history-modal').classList.add('hidden');
     }
   </script>
+  <script src="/video.js"></script>
+  <script src="/news.js"></script>
 </body>
 </html>

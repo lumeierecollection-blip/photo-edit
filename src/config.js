@@ -5,13 +5,32 @@ const SETTINGS_FILE = path.join(__dirname, '../uploads/settings.json');
 
 const DEFAULT_SETTINGS = {
   logoWidthPercent: 48, // 48% of image width
-  bottomMarginPercent: 3, // 3% of image height
-  logoOpacity: 100, // 100%
+  watermarkOpacity: 35, // see-through watermark in the center (a soft dark edge keeps it readable on bright photos)
+  watermarkColor: '#f0f0f0', // whitish grey; the logo's own colors are not used
   jpegQuality: 95,
   outputFolderSuffix: ' — Watermarked',
   includeSubfolders: false,
   maxConcurrent: 5,
-  retryCount: 3
+  retryCount: 3,
+
+  // Video Converter (advanced). Defaults need no configuration.
+  videoOutputFolderSuffix: ' — MP4 Converted',
+  videoCodec: 'h264', // 'h264' (most compatible) or 'hevc'
+  videoCrf: 18, // visually lossless for H.264
+  videoPreset: 'medium',
+  videoAudioBitrateKbps: 256, // per stereo pair when audio must be re-encoded
+  videoKeepHevc: false, // remux H.265 sources instead of converting them to H.264
+  videoPreserveMetadata: true,
+  videoMaxConcurrentFiles: 0, // 0 = automatic
+  videoMaxConcurrentEncodes: 0, // 0 = automatic
+  videoRetryCount: 5,
+  videoFullDecodeCheck: false, // decode every frame of each output (slow) instead of sampling
+
+  // Church News
+  newsWhisperModel: 'base', // 'tiny' (fastest), 'base', or 'small' (most accurate, slowest)
+  newsLanguage: 'english', // spoken language, or 'auto' to detect it
+  newsTranslateToEnglish: false, // write the transcript in English when another language is spoken
+  newsNetworkName: 'Church News' // name on the news studio's corner badge
 };
 
 function getSettings() {
