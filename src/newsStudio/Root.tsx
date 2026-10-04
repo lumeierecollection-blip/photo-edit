@@ -17,7 +17,7 @@ export const RemotionRoot: React.FC = () => {
       width={FORMAT_SIZES.portrait.width}
       height={FORMAT_SIZES.portrait.height}
       calculateMetadata={({props}) => ({
-        durationInFrames: Math.max(1, Math.floor((props.durationInSeconds + (props.introSeconds || 0)) * FPS)),
+        durationInFrames: Math.max(1, Math.floor((props.durationInSeconds + (props.introSeconds || 0) + (props.tailSeconds || 0)) * FPS)),
         ...(FORMAT_SIZES[props.format] || FORMAT_SIZES.portrait),
       })}
     />

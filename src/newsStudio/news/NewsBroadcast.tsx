@@ -6,7 +6,7 @@ import {PosterSlide, StudioSet} from './StudioSet';
 import {MainHeadline, NewsOverlay} from './Graphics';
 import {defaultStudioPalette, StudioPalette} from './StudioBackground';
 import {BrollCue, BrollLayer} from './Broll';
-import {IntroLayer} from './Intro';
+import {IntroLayer, IntroMedia} from './Intro';
 
 /** Portrait for phones and social media, landscape for presentation screens. */
 export type NewsFormat = 'portrait' | 'landscape';
@@ -56,6 +56,10 @@ export type NewsBroadcastProps = {
   introSeconds: number;
   /** The presenter's photo for the opening card (http:// address). */
   presenterPhoto?: string;
+  /** Photos and videos for the opening montage behind the logo; empty for a plain black sting. */
+  introMedia?: IntroMedia[];
+  /** Seconds the composition runs on after the presenter's clip ends (the closing calendar). */
+  tailSeconds?: number;
   /** Parts of the clip to remove after keying (fractions of the clip). */
   mattes?: {x0: number; y0: number; x1: number; y1: number}[];
 };
@@ -115,6 +119,8 @@ export const NewsBroadcast: React.FC<NewsBroadcastProps> = ({
   broll,
   introSeconds,
   presenterPhoto,
+  introMedia,
+  tailSeconds: _tail,
   mattes,
   ...overlay
 }) => {
@@ -125,6 +131,7 @@ export const NewsBroadcast: React.FC<NewsBroadcastProps> = ({
           times stay measured from the start of the presenter's clip. */}
       <Sequence from={Math.round((introSeconds || 0) * fps)} layout="none">
       <StudioSet network={overlay.network} photos={photos} posters={posterScreen} />
+      <Sequence durationInFrames={Math.max(1, Math.ceil(durationInSeconds * fps))} layout="none">
       <KeyedVideo
         src={videoSrc}
         chromaKey={chromaKey}
@@ -134,12 +141,13 @@ export const NewsBroadcast: React.FC<NewsBroadcastProps> = ({
         mattes={mattes}
         filter="drop-shadow(0 10px 26px rgba(0,0,0,0.6))"
       />
+      </Sequence>
       <NewsOverlay {...overlay} />
       {/* Full-screen explainer cards hide the presenter completely. */}
       <BrollLayer cues={broll || []} palette={palette} network={overlay.network} />
       </Sequence>
       {introSeconds > 0 ? (
-        <IntroLayer seconds={introSeconds} name={overlay.name} role={overlay.role} photo={presenterPhoto} network={overlay.network} />
+        <IntroLayer seconds={introSeconds} name={overlay.name} role={overlay.role} photo={presenterPhoto} network={overlay.network} media={introMedia} />
       ) : null}
     </AbsoluteFill>
   );

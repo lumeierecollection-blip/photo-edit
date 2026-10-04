@@ -411,7 +411,9 @@ export const NewsOverlay: React.FC<{
 
   return (
     <AbsoluteFill>
-      <LogoBug name={network} scale={scale} logoSrc={logoSrc} />
+      {/* The studio wall already carries the network name; the corner badge only
+          appears when a logo is chosen for it. */}
+      {logoSrc ? <LogoBug name={network} scale={scale} logoSrc={logoSrc} /> : null}
       {showLive ? <LiveBadge clock={clock} scale={scale} /> : null}
       <LowerThird
         label={headline}
